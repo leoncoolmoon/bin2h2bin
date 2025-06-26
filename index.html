@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件转换工具 - 二进制与头文件互转</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .converter-section {
+            margin-bottom: 30px;
+        }
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        .file-upload:hover {
+            border-color: #2980b9;
+            background-color: #f0f7fd;
+        }
+        .file-upload input {
+            display: none;
+        }
+        .file-upload label {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .file-upload label:hover {
+            background-color: #2980b9;
+        }
+        .file-info {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .convert-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-bottom: 20px;
+        }
+        .convert-btn:hover {
+            background-color: #27ae60;
+        }
+        .convert-btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #e8f8f5;
+            display: none;
+        }
+        .download-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        .download-btn:hover {
+            background-color: #2980b9;
+        }
+        .error {
+            color: #e74c3c;
+            margin-top: 10px;
+            display: none;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: white;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .instructions {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #eaf7fd;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>文件转换工具</h1>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="binary-to-header">二进制转头文件</div>
+            <div class="tab" data-tab="header-to-binary">头文件转二进制</div>
+        </div>
+        
+        <!-- 二进制转头文件 -->
+        <div id="binary-to-header" class="tab-content active">
+            <div class="converter-section">
+                <div class="file-upload" id="binary-upload">
+                    <input type="file" id="binary-file" accept="*">
+                    <label for="binary-file">选择二进制文件</label>
+                    <div class="file-info" id="binary-file-info">未选择文件</div>
+                </div>
+                <button id="convert-to-header" class="convert-btn" disabled>转换为头文件</button>
+                <div class="result" id="binary-result">
+                    <p>转换完成！</p>
+                    <a href="#" class="download-btn" id="download-header">下载头文件</a>
+                </div>
+                <div class="error" id="binary-error"></div>
+            </div>
+        </div>
+        
+        <!-- 头文件转二进制 -->
+        <div id="header-to-binary" class="tab-content">
+            <div class="converter-section">
+                <div class="file-upload" id="header-upload">
+                    <input type="file" id="header-file" accept=".h,.hpp">
+                    <label for="header-file">选择头文件</label>
+                    <div class="file-info" id="header-file-info">未选择文件</div>
+                </div>
+                <button id="convert-to-binary" class="convert-btn" disabled>转换为二进制文件</button>
+                <div class="result" id="header-result">
+                    <p>转换完成！</p>
+                    <a href="#" class="download-btn" id="download-binary">下载二进制文件</a>
+                </div>
+                <div class="error" id="header-error"></div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>使用说明：</h3>
+            <ul>
+                <li><strong>二进制转头文件</strong>：上传任意二进制文件，将其转换为C/C++头文件格式的十六进制数组</li>
+                <li><strong>头文件转二进制</strong>：上传包含十六进制数组的头文件(格式如: <code>const uint8_t data[] = {0x12, 0x34};</code>)，将其转换回二进制文件</li>
+            </ul>
+            <p>所有处理均在浏览器中完成，文件不会上传到服务器，保证数据安全。</p>
+        </div>
+    </div>
+
+    <script>
+        // 标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // 二进制转头文件功能
+        const binaryFileInput = document.getElementById('binary-file');
+        const binaryFileInfo = document.getElementById('binary-file-info');
+        const convertToHeaderBtn = document.getElementById('convert-to-header');
+        const binaryResult = document.getElementById('binary-result');
+        const downloadHeaderBtn = document.getElementById('download-header');
+        const binaryError = document.getElementById('binary-error');
+        
+        let binaryFile = null;
+        
+        binaryFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                binaryFile = e.target.files[0];
+                binaryFileInfo.textContent = `已选择: ${binaryFile.name} (${formatFileSize(binaryFile.size)})`;
+                convertToHeaderBtn.disabled = false;
+                binaryResult.style.display = 'none';
+                binaryError.style.display = 'none';
+            }
+        });
+        
+        convertToHeaderBtn.addEventListener('click', () => {
+            if (!binaryFile) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const array = new Uint8Array(e.target.result);
+                    const fileName = binaryFile.name.replace(/\.[^/.]+$/, "").replace(/\./g, '_');
+                    const headerContent = generateHeaderFile(array, fileName);
+                    
+                    // 创建下载链接
+                    const blob = new Blob([headerContent], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    downloadHeaderBtn.href = url;
+                    downloadHeaderBtn.download = `${fileName}.h`;
+                    
+                    binaryResult.style.display = 'block';
+                    binaryError.style.display = 'none';
+                } catch (err) {
+                    showError(binaryError, `转换失败: ${err.message}`);
+                }
+            };
+            reader.onerror = () => {
+                showError(binaryError, '文件读取失败');
+            };
+            reader.readAsArrayBuffer(binaryFile);
+        });
+        
+        // 头文件转二进制功能
+        const headerFileInput = document.getElementById('header-file');
+        const headerFileInfo = document.getElementById('header-file-info');
+        const convertToBinaryBtn = document.getElementById('convert-to-binary');
+        const headerResult = document.getElementById('header-result');
+        const downloadBinaryBtn = document.getElementById('download-binary');
+        const headerError = document.getElementById('header-error');
+        
+        let headerFile = null;
+        
+        headerFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                headerFile = e.target.files[0];
+                headerFileInfo.textContent = `已选择: ${headerFile.name} (${formatFileSize(headerFile.size)})`;
+                convertToBinaryBtn.disabled = false;
+                headerResult.style.display = 'none';
+                headerError.style.display = 'none';
+            }
+        });
+        
+        convertToBinaryBtn.addEventListener('click', () => {
+            if (!headerFile) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const text = e.target.result;
+                    const binaryData = parseHeaderFile(text);
+                    const fileName = headerFile.name.replace(/\.[^/.]+$/, "") + '.bin';
+                    
+                    // 创建下载链接
+                    const blob = new Blob([binaryData], { type: 'application/octet-stream' });
+                    const url = URL.createObjectURL(blob);
+                    downloadBinaryBtn.href = url;
+                    downloadBinaryBtn.download = fileName;
+                    
+                    headerResult.style.display = 'block';
+                    headerError.style.display = 'none';
+                } catch (err) {
+                    showError(headerError, `转换失败: ${err.message}`);
+                }
+            };
+            reader.onerror = () => {
+                showError(headerError, '文件读取失败');
+            };
+            reader.readAsText(headerFile);
+        });
+        
+        // 工具函数
+        function generateHeaderFile(array, fileName) {
+            let headerContent = `const uint8_t ${fileName.toUpperCase().replace(/\./g, '_')}[] = {\n`;
+            const lineLength = 16;
+            
+            for (let i = 0; i < array.length; i++) {
+                const byte = array[i];
+                headerContent += `0x${byte.toString(16).padStart(2, '0')}`;
+                
+                if (i < array.length - 1) {
+                    headerContent += ', ';
+                }
+                
+                if ((i + 1) % lineLength === 0 || i === array.length - 1) {
+                    headerContent += '\n';
+                }
+            }
+            
+            headerContent += '};\n';
+            return headerContent;
+        }
+        
+        function parseHeaderFile(text) {
+            // 查找数组数据部分
+            const arrayStart = text.indexOf('{');
+            const arrayEnd = text.indexOf('}', arrayStart);
+            
+            if (arrayStart === -1 || arrayEnd === -1) {
+                throw new Error('未找到有效的数组数据');
+            }
+            
+            const arrayContent = text.substring(arrayStart + 1, arrayEnd);
+            const bytes = [];
+            
+            // 匹配十六进制或十进制数字
+            const numberRegex = /(0x[0-9a-fA-F]+|\d+)/g;
+            let match;
+            
+            while ((match = numberRegex.exec(arrayContent)) !== null) {
+                let number;
+                if (match[0].startsWith('0x')) {
+                    number = parseInt(match[0], 16);
+                } else {
+                    number = parseInt(match[0], 10);
+                }
+                
+                if (number < 0 || number > 255) {
+                    throw new Error(`数值超出字节范围: ${match[0]}`);
+                }
+                
+                bytes.push(number);
+            }
+            
+            if (bytes.length === 0) {
+                throw new Error('未找到有效的字节数据');
+            }
+            
+            return new Uint8Array(bytes);
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function showError(element, message) {
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
